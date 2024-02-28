@@ -1,6 +1,14 @@
 .scramblerButton{
     padding: 0px;
+    position: absolute;
+    top: 15%;
+    left: 5%;
 }
 .h1 {
     text-align: center;
+}
+.firstBox{
+    position: absolute;
+    left: 7%;
+    top: 10.5%;
 }
