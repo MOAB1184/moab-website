@@ -7,8 +7,22 @@
 .h1 {
     text-align: center;
 }
-.firstBox{
+.footballPage{
     position: absolute;
-    left: 7%;
-    top: 10.5%;
+    left: 10%;
+    padding: 0px;
+    top: 15%;
+    text-align: center;
+}
+.nflPage{
+    position: absolute;
+    text-align: center;
+    top: 48%;
+    left: 48%;
+}
+.cfbPage{
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 48%;
 }
