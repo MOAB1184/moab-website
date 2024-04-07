@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="styles/final.css" rel="stylesheet" type="text/css">
+    <style>
+        h1 {text-align: center;}
+        h4 {text-align: center;}
+    </style>
+</head>
+<body>
+    <h1>Pizzas: <a id="pizzaCount">0</a></h1>
+    <h4>Pizzas Per Second: <a id="pizzasPerSecond">0</a></h4>
+    <hr>
+    <table class="right">
+        <tr>
+            <th>Buildings</th>
+        </tr>
+        <tr>
+            <td>
+                <p>Oven</p>
+                <p><button id="ovenCost" onclick="onClick()">Cost: $50</button></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>Kitchen</p>
+                <p><button id="kitchenCost" onclick="onClick()">Cost: $200</button></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>Restaurant</p>
+                <p><button id="restaurantCost" onclick="onClick()">Cost: $1,000</button></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>Factory</p>
+                <p><button id="factoryCost" onclick="onClick()">Cost: $5,000</button></p>
+            </td>
+        </tr>
+    </table>
+    <table class="center">
+        <tr>
+            <td>
+                <p>Ovens: <a id="ovenCount">0</a></p>
+                <p>Kitchens: <a id="kitchenCount">0</a></p>
+                <p>Restaurants: <a id="restaurantCount">0</a></p>
+                <p>Factories: <a id="factoryCount">0</a></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="credits2.html"><button id="statsPage" onclick="buttonClick()">Credits</button></a> 
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="revive.html"><button id="revivalPage" onclick="buttonClick()">Revive: $100,000</button></a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="credits.html"><button id="gameOverPage" onclick="buttonClick()">Win: $1,000,000</button></a>
+            </td> 
+        </tr>
+    </table>
+    <button class="pizzaButton" id="pizzaClicker" onclick="onClick()"><img src="src/img/fernando-andrade-_P76trHTWDE-unsplash.jpg" width="100%" height="100%"></button>
+<script src="final.js"></script>
+</body>
+</html>
