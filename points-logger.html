@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Logger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .category {
+            margin-top: 20px;
+        }
+        #pointsLogger {
+            width: 70%;
+            float: left;
+        }
+        #tasks {
+            width: 25%;
+            float: right;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        .task {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .leaderboard-entry {
+            border-bottom: 1px solid #ddd;
+            padding: 5px 0;
+        }
+        #leaderboard {
+            clear: both;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+        <div id="assignTaskForm" style="display: none;">
+            <h2>Assign Task</h2>
+            <label for="assignTo">Assign To: </label>
+            <select id="assignTo">
+                <option value=""></option>
+            </select><br><br>
+
+            <label for="assignTask">Task: </label>
+            <input type="text" id="assignTask" placeholder="Task description"><br><br>
+            <label for="assignPoints">Points: </label>
+            <input type="number" id="assignPoints" placeholder="Points"><br><br>
+            <button onclick="assignTask()">Assign Task</button>
+        </div>
+    </div>
+
+    <div id="tasks">
+        <h3>Assigned Tasks</h3>
+        <!-- Assigned tasks will be displayed here -->
+    </div>
+
+    <div id="leaderboard">
+        <h3>Total Points Earned</h3>
+        <!-- Leaderboard will be updated here -->
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
