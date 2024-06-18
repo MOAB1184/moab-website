@@ -38,32 +38,32 @@
     </style>
 </head>
 <body>
-    <h1>Task Manager</h1>
+    <h1>Overview</h1>
+    <div id="pointsLogger">
         <div id="assignTaskForm" style="display: none;">
             <h2>Assign Task</h2>
             <label for="assignTo">Assign To: </label>
             <select id="assignTo">
                 <option value=""></option>
             </select><br><br>
-
             <label for="assignTask">Task: </label>
             <input type="text" id="assignTask" placeholder="Task description"><br><br>
             <label for="assignPoints">Points: </label>
             <input type="number" id="assignPoints" placeholder="Points"><br><br>
             <button onclick="assignTask()">Assign Task</button>
         </div>
+        <select id="person">
+            <option value=""></option>
+        </select><br><br>
     </div>
-
     <div id="tasks">
         <h3>Assigned Tasks</h3>
         <!-- Assigned tasks will be displayed here -->
     </div>
-
     <div id="leaderboard">
         <h3>Total Points Earned</h3>
         <!-- Leaderboard will be updated here -->
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

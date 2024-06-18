@@ -15,16 +15,6 @@ const levels = {
 const points = JSON.parse(localStorage.getItem('points')) || {};
 const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-function showRegisterForm() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-}
-
-function showLoginForm() {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-}
-
 function register() {
     const username = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
@@ -122,9 +112,11 @@ function updateLeaderboard() {
     const loggedInUser = localStorage.getItem('loggedInUser');
     const userLevel = levels[loggedInUser];
 
-    const sortedUsers = Object.keys(points).sort((a, b) => points[b] - points[a]);
+    Object.keys(levels).forEach(user => {
+        if (!points[user]) {
+            points[user] = 0;
+        }
 
-    sortedUsers.forEach(user => {
         if (userLevel === 3 || 
             (userLevel === 2.2 && levels[user] === 1.2) ||
             (userLevel === 2.1 && levels[user] === 1.1) ||
@@ -227,6 +219,14 @@ window.onload = function() {
             document.getElementById('assignTaskForm').style.display = 'block';
             updateAssignToOptions();
         }
+        // Populate the "person" select element with users
+        const personSelect = document.getElementById('person');
+        Object.keys(levels).forEach(user => {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            personSelect.appendChild(option);
+        });
     } else {
         window.location.href = 'index.html';
     }
