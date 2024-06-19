@@ -88,12 +88,12 @@ async function updateSheetData(range, values) {
 
 async function updatePoints() {
     const pointsArray = Object.entries(points).map(([username, point]) => [username, levels[username], passwords[username], point]);
-    await updateSheetData('Sheet1!A:D', pointsArray);
+    await updateSheetData('Sheet1!D:D', pointsArray);
 }
 
 async function updateTasksSheet() {
     const tasksArray = tasks.map(task => [task.assignedTo, task.assignedBy, task.task, task.points]);
-    await updateSheetData('Sheet1!A:D', tasksArray);
+    await updateSheetData('Sheet1!D:D', tasksArray);
 }
 
 function login() {
