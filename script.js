@@ -89,7 +89,7 @@ async function updatePoints() {
 
 async function updateTasksSheet() {
     const tasksArray = tasks.map(task => [task.assignedBy, task.assignedTo, task.task, task.points]);
-    await updateSheetData('Tasks!A:D', tasksArray);
+    await updateSheetData('Sheet1!A:D', tasksArray);
 }
 
 function login() {
