@@ -148,8 +148,7 @@ async function assignTask() {
     const userLevel = levels[loggedInUser];
 
     if (assignTo && assignTask && !isNaN(assignPoints) && assignPoints > 0) {
-        if ((userLevel === 2.2 && levels[assignTo] !== 1.2) || 
-            (userLevel === 2.1 && levels[assignTo] !== 1.1)) {
+        if (userLevel === 3 || (userLevel === 2.2 && levels[assignTo] === 1.2) || (userLevel === 2.1 && levels[assignTo] === 1.1)) {
             return;
         }
 
