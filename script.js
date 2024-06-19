@@ -49,6 +49,11 @@ function login() {
     }
 }
 
+function logout() {
+    localStorage.removeItem('loggedInUser');
+    window.location.href = 'index.html';
+}
+
 function logPoints() {
     const person = document.getElementById('person').value;
     const task = document.getElementById('task').value;
@@ -321,7 +326,7 @@ window.onload = function() {
             document.getElementById('assignTaskForm').style.display = 'block';
         }
     } else {
-        window.location.href = 'index.html'
+        window.location.href = 'index.html';
     }
 }
 
