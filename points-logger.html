@@ -27,10 +27,6 @@
             padding: 10px;
             margin-bottom: 10px;
         }
-        .task-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
         .leaderboard-entry {
             border-bottom: 1px solid #ddd;
             padding: 5px 0;
@@ -42,14 +38,14 @@
     </style>
 </head>
 <body>
-    <h1>Overview</h1>
-    <div id="pointsLogger">
-        <div id="assignTaskForm">
+    <h1>Task Manager</h1>
+        <div id="assignTaskForm" style="display: none;">
             <h2>Assign Task</h2>
             <label for="assignTo">Assign To: </label>
             <select id="assignTo">
                 <option value=""></option>
             </select><br><br>
+
             <label for="assignTask">Task: </label>
             <input type="text" id="assignTask" placeholder="Task description"><br><br>
             <label for="assignPoints">Points: </label>
@@ -60,14 +56,17 @@
             <option value=""></option>
         </select><br><br>
     </div>
+
     <div id="tasks">
         <h3>Assigned Tasks</h3>
         <!-- Assigned tasks will be displayed here -->
     </div>
+
     <div id="leaderboard">
         <h3>Total Points Earned</h3>
         <!-- Leaderboard will be updated here -->
     </div>
-    <script src="index.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
