@@ -1,6 +1,5 @@
 const sheetId = '11LxnU4bloGgINAh90D7k8VfHTPnU5PEGowvmb9ugp28';
 const apiKey = 'AIzaSyA8lRYrx0bCNMWI71JmErIIQ3qwP6XCy-Q';
-const range = 'Tasks!A:D';
 
 const levels = {
     'Shaurya': 3,
@@ -27,33 +26,38 @@ const passwords = {
     'Neel': 6677035,
     'Anton': 5958803
 };
+
 const points = {};
 let tasks = [];
 let loggedInUser = null;
 
 async function fetchSheetData() {
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`);
+    console.log('Fetching user data...');
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:D?key=${apiKey}`);
     const data = await response.json();
+    console.log('Fetched user data:', data);
     processSheetData(data.values);
 }
 
 function processSheetData(data) {
     data.forEach(row => {
-        const [username, level, password, point] = row;
-        levels[username] = parseFloat(level);
-        passwords[username] = parseInt(password);
-        points[username] = parseFloat(point) || 0;
+        const [assignedTo, assignedBy, task, point] = row;
+        levels[assignedTo] = levels[assignedTo] || 1; // Default level if not defined
+        passwords[assignedTo] = passwords[assignedTo] || 123456; // Default password if not defined
+        points[assignedTo] = parseFloat(point) || 0;
     });
     updateLeaderboard();
     updateTasks();
 }
 
 async function fetchTasksData() {
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Tasks!A:D?key=${apiKey}`);
+    console.log('Fetching tasks data...');
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:D?key=${apiKey}`);
     const data = await response.json();
+    console.log('Fetched tasks data:', data);
     tasks = data.values.map(row => ({
-        assignedBy: row[0],
-        assignedTo: row[1],
+        assignedTo: row[0],
+        assignedBy: row[1],
         task: row[2],
         points: parseFloat(row[3])
     }));
@@ -84,11 +88,11 @@ async function updateSheetData(range, values) {
 
 async function updatePoints() {
     const pointsArray = Object.entries(points).map(([username, point]) => [username, levels[username], passwords[username], point]);
-    await updateSheetData(range, pointsArray);
+    await updateSheetData('Sheet1!A:D', pointsArray);
 }
 
 async function updateTasksSheet() {
-    const tasksArray = tasks.map(task => [task.assignedBy, task.assignedTo, task.task, task.points]);
+    const tasksArray = tasks.map(task => [task.assignedTo, task.assignedBy, task.task, task.points]);
     await updateSheetData('Sheet1!A:D', tasksArray);
 }
 
@@ -126,7 +130,7 @@ async function logPoints() {
             points[person] = 0;
         }
         points[person] += pointsEarned;
-        await updatePoints();
+        await updatePoints(); // Update Google Sheets
         updateLeaderboard();
     } else {
         alert('Please enter a valid task description and points.');
@@ -184,7 +188,7 @@ async function completeTask(index) {
     }
 }
 
-async function updateLeaderboard() {
+function updateLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     leaderboard.innerHTML = '';
 
@@ -199,7 +203,7 @@ async function updateLeaderboard() {
     });
 }
 
-async function updateTasks() {
+function updateTasks() {
     const tasksDiv = document.getElementById('tasks');
     tasksDiv.innerHTML = '';
 
