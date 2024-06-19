@@ -23,11 +23,6 @@ jobs:
       # If you're using Yarn, use:
       # run: yarn install
 
-    - name: Build project
-      run: npm run build
-      # If you're using Yarn, use:
-      # run: yarn build
-
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
