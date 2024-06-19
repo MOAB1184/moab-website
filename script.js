@@ -320,6 +320,8 @@ window.onload = function() {
         if (levels[loggedInUser] >= 2) {
             document.getElementById('assignTaskForm').style.display = 'block';
         }
+    } else {
+        window.location.href = 'index.html'
     }
 }
 
