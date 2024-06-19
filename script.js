@@ -326,7 +326,7 @@ window.onload = function() {
             document.getElementById('assignTaskForm').style.display = 'block';
         }
     } else {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }
 }
 
