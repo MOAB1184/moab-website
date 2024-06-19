@@ -49,11 +49,6 @@ function login() {
     }
 }
 
-function logout() {
-    localStorage.removeItem('loggedInUser');
-    window.location.href = 'index.html';
-}
-
 function logPoints() {
     const person = document.getElementById('person').value;
     const task = document.getElementById('task').value;
@@ -325,8 +320,6 @@ window.onload = function() {
         if (levels[loggedInUser] >= 2) {
             document.getElementById('assignTaskForm').style.display = 'block';
         }
-    } else {
-        window.location.href = 'index.html';
     }
 }
 
