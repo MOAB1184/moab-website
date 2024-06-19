@@ -1,4 +1,7 @@
-const users = JSON.parse(localStorage.getItem('users')) || {};
+const sheetId = '11LxnU4bloGgINAh90D7k8VfHTPnU5PEGowvmb9ugp28';
+const apiKey = 'AIzaSyA8lRYrx0bCNMWI71JmErIIQ3qwP6XCy-Q';
+const range = 'Tasks!A:D';
+
 const levels = {
     'Shaurya': 3,
     'Nikita': 2.2,
@@ -12,29 +15,89 @@ const levels = {
     'Anton': 1
 };
 
-const points = JSON.parse(localStorage.getItem('points')) || {};
-const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+const passwords = {
+    'Shaurya': 1094073,
+    'Nikita': 3143733,
+    'Sid': 5834944,
+    'Aditya': 1224968,
+    'Angad': 7637735,
+    'Arnav': 7067523,
+    'Dhir': 5376731,
+    'Giuliano': 4633432,
+    'Neel': 6677035,
+    'Anton': 5958803
+};
+const points = {};
+let tasks = [];
+let loggedInUser = null;
 
-function register() {
-    const username = document.getElementById('registerUsername').value;
-    const password = document.getElementById('registerPassword').value;
+async function fetchSheetData() {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`);
+    const data = await response.json();
+    processSheetData(data.values);
+}
 
-    if (username && password) {
-        users[username] = password;
-        localStorage.setItem('users', JSON.stringify(users));
-        alert('Registration successful! You can now log in.');
-        showLoginForm();
-    } else {
-        alert('Please enter both username and password.');
-    }
+function processSheetData(data) {
+    data.forEach(row => {
+        const [username, level, password, point] = row;
+        levels[username] = parseFloat(level);
+        passwords[username] = parseInt(password);
+        points[username] = parseFloat(point) || 0;
+    });
+    updateLeaderboard();
+    updateTasks();
+}
+
+async function fetchTasksData() {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Tasks!A:D?key=${apiKey}`);
+    const data = await response.json();
+    tasks = data.values.map(row => ({
+        assignedBy: row[0],
+        assignedTo: row[1],
+        task: row[2],
+        points: parseFloat(row[3])
+    }));
+    updateTasks();
+}
+
+async function updateSheetData(range, values) {
+    const body = {
+        valueInputOption: 'RAW',
+        data: [{
+            range: range,
+            majorDimension: 'ROWS',
+            values: values
+        }]
+    };
+
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+
+    const result = await response.json();
+    console.log('Update response:', result);
+}
+
+async function updatePoints() {
+    const pointsArray = Object.entries(points).map(([username, point]) => [username, levels[username], passwords[username], point]);
+    await updateSheetData(range, pointsArray);
+}
+
+async function updateTasksSheet() {
+    const tasksArray = tasks.map(task => [task.assignedBy, task.assignedTo, task.task, task.points]);
+    await updateSheetData('Tasks!A:D', tasksArray);
 }
 
 function login() {
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
-    if (users[username] && users[username] === password) {
-        localStorage.setItem('loggedInUser', username);
+    if (passwords[username] && passwords[username] === parseInt(password)) {
+        loggedInUser = username;
         window.location.href = 'points-logger.html';
     } else {
         alert('Invalid username or password.');
@@ -42,16 +105,15 @@ function login() {
 }
 
 function logout() {
-    localStorage.removeItem('loggedInUser');
+    loggedInUser = null;
     window.location.href = 'login.html';
 }
 
-function logPoints() {
+async function logPoints() {
     const person = document.getElementById('person').value;
     const task = document.getElementById('task').value;
     const pointsEarned = parseFloat(document.getElementById('points').value);
 
-    const loggedInUser = localStorage.getItem('loggedInUser');
     const userLevel = levels[loggedInUser];
 
     if (person && task && !isNaN(pointsEarned) && pointsEarned > 0) {
@@ -64,7 +126,7 @@ function logPoints() {
             points[person] = 0;
         }
         points[person] += pointsEarned;
-        localStorage.setItem('points', JSON.stringify(points));
+        await updatePoints();
         updateLeaderboard();
     } else {
         alert('Please enter a valid task description and points.');
@@ -74,12 +136,11 @@ function logPoints() {
     document.getElementById('points').value = '';
 }
 
-function assignTask() {
+async function assignTask() {
     const assignTo = document.getElementById('assignTo').value;
     const assignTask = document.getElementById('assignTask').value;
     const assignPoints = parseFloat(document.getElementById('assignPoints').value);
 
-    const loggedInUser = localStorage.getItem('loggedInUser');
     const userLevel = levels[loggedInUser];
 
     if (assignTo && assignTask && !isNaN(assignPoints) && assignPoints > 0) {
@@ -95,7 +156,7 @@ function assignTask() {
             points: assignPoints
         });
 
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        await updateTasksSheet(); // Update Google Sheets
         updateTasks();
     } else {
         alert('Please enter a valid task description and points.');
@@ -105,38 +166,44 @@ function assignTask() {
     document.getElementById('assignPoints').value = '';
 }
 
-function updateLeaderboard() {
+async function completeTask(index) {
+    const task = tasks[index];
+
+    if (task.assignedTo === loggedInUser) {
+        if (!points[task.assignedTo]) {
+            points[task.assignedTo] = 0;
+        }
+        points[task.assignedTo] += task.points;
+        tasks.splice(index, 1);
+        await updatePoints();
+        await updateTasksSheet();
+        updateTasks();
+        updateLeaderboard();
+    } else {
+        alert('You can only complete tasks assigned to you.');
+    }
+}
+
+async function updateLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     leaderboard.innerHTML = '';
 
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    const userLevel = levels[loggedInUser];
+    const sortedUsers = Object.keys(levels).sort((a, b) => (points[b] || 0) - (points[a] || 0));
 
-    Object.keys(levels).forEach(user => {
-        if (!points[user]) {
-            points[user] = 0;
-        }
-
-        if (userLevel === 3 || 
-            (userLevel === 2.2 && levels[user] === 1.2) ||
-            (userLevel === 2.1 && levels[user] === 1.1) ||
-            (userLevel === 1.2 && levels[user] === 2.2) ||
-            (userLevel === 1.1 && levels[user] === 2.1)) {
-            const userDiv = document.createElement('div');
-            userDiv.className = 'leaderboard-entry';
-            userDiv.textContent = `${user}: ${points[user]} points`;
-            leaderboard.appendChild(userDiv);
-        }
+    sortedUsers.forEach(user => {
+        const userPoints = points[user] || 0;
+        const userDiv = document.createElement('div');
+        userDiv.className = 'leaderboard-entry';
+        userDiv.textContent = `${user}: ${userPoints} points`;
+        leaderboard.appendChild(userDiv);
     });
 }
 
-function updateTasks() {
+async function updateTasks() {
     const tasksDiv = document.getElementById('tasks');
     tasksDiv.innerHTML = '';
 
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    
-    const userTasks = tasks.filter(task => task.assignedBy === loggedInUser || task.assignedTo === loggedInUser);
+    const userTasks = tasks.filter(task => task.assignedTo === loggedInUser);
 
     if (userTasks.length === 0) {
         tasksDiv.innerHTML = '<p>No Current Tasks</p>';
@@ -144,90 +211,52 @@ function updateTasks() {
         userTasks.forEach((task, index) => {
             const taskDiv = document.createElement('div');
             taskDiv.className = 'task';
-            taskDiv.innerHTML = `
-                <strong>Task:</strong> ${task.task}<br>
-                <strong>Points:</strong> ${task.points}<br>
-                <strong>Assigned By:</strong> ${task.assignedBy}<br>
-                <strong>Assigned To:</strong> ${task.assignedTo}<br>
-                <button onclick="completeTask(${index})">Complete Task</button>
-            `;
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'task-title';
+            titleDiv.textContent = `Assigned by: ${task.assignedBy}`;
+
+            const assignedToDiv = document.createElement('div');
+            assignedToDiv.className = 'task-assigned-to';
+            assignedToDiv.textContent = `Assigned to: ${task.assignedTo}`;
+
+            const descriptionDiv = document.createElement('div');
+            descriptionDiv.textContent = task.task;
+
+            const pointsDiv = document.createElement('div');
+            pointsDiv.className = 'task-points';
+            pointsDiv.textContent = `Points: ${task.points}`;
+
+            const completeButton = document.createElement('button');
+            completeButton.textContent = 'Complete Task';
+            completeButton.onclick = () => completeTask(index);
+
+            taskDiv.appendChild(titleDiv);
+            taskDiv.appendChild(assignedToDiv);
+            taskDiv.appendChild(descriptionDiv);
+            taskDiv.appendChild(pointsDiv);
+            taskDiv.appendChild(completeButton);
+
             tasksDiv.appendChild(taskDiv);
         });
     }
 }
 
-function completeTask(index) {
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    
-    const actualIndex = tasks.findIndex((task, idx) => {
-        const taskMatch = task.assignedBy === loggedInUser || task.assignedTo === loggedInUser;
-        return taskMatch && idx === index;
-    });
-
-    if (actualIndex === -1) {
-        alert('Task not found or you do not have permission to complete this task.');
-        return;
-    }
-
-    const task = tasks[actualIndex];
-
-    if (task.assignedTo !== loggedInUser) {
-        alert('You can only complete tasks assigned to you.');
-        return;
-    }
-
-    if (!points[loggedInUser]) {
-        points[loggedInUser] = 0;
-    }
-    points[loggedInUser] += task.points;
-
-    tasks.splice(actualIndex, 1); // Remove the task from the original array
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    localStorage.setItem('points', JSON.stringify(points));
-
-    updateTasks();
-    updateLeaderboard();
-}
-
-function updateAssignToOptions() {
+document.addEventListener('DOMContentLoaded', () => {
+    const personSelect = document.getElementById('person');
     const assignToSelect = document.getElementById('assignTo');
-    assignToSelect.innerHTML = '<option value=""></option>';  // Reset options
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    const userLevel = levels[loggedInUser];
 
     Object.keys(levels).forEach(user => {
-        if (user !== loggedInUser && (
-            (userLevel === 3) ||
-            (userLevel === 2.2 && levels[user] === 1.2) ||
-            (userLevel === 2.1 && levels[user] === 1.1)
-        )) {
-            const option = document.createElement('option');
-            option.value = user;
-            option.textContent = user;
-            assignToSelect.appendChild(option);
-        }
+        const option = document.createElement('option');
+        option.value = user;
+        option.textContent = user;
+        personSelect.appendChild(option);
+        assignToSelect.appendChild(option.cloneNode(true));
     });
-}
 
-window.onload = function() {
-    updateLeaderboard();
     updateTasks();
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    if (loggedInUser) {
-        document.getElementById('person').value = loggedInUser;
-        if (levels[loggedInUser] >= 2) {
-            document.getElementById('assignTaskForm').style.display = 'block';
-            updateAssignToOptions();
-        }
-        // Populate the "person" select element with users
-        const personSelect = document.getElementById('person');
-        Object.keys(levels).forEach(user => {
-            const option = document.createElement('option');
-            option.value = user;
-            option.textContent = user;
-            personSelect.appendChild(option);
-        });
-    } else {
-        window.location.href = 'index.html';
-    }
-}
+    updateLeaderboard();
+});
+
+fetchSheetData();
+fetchTasksData();
