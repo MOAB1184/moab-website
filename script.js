@@ -1,6 +1,9 @@
 const sheetId = '11LxnU4bloGgINAh90D7k8VfHTPnU5PEGowvmb9ugp28';
+const sheetTitle = 'Sheet1';
+const sheetRange = 'A9:E9';
 const apiKey = 'AIzaSyA8lRYrx0bCNMWI71JmErIIQ3qwP6XCy-Q';
 const apiKeyy = 'ya29.a0AXooCgut5JKEcYCtJb_5mgXJgKShHdz1IBtGdjkE5ldwYj9k15GgIWluDMZc5RNqkeAXn-PimfseuxWyGWhYCNoF-rVP45mib99nTj0GBDyRTLrxo9naPpZPHT8i3gWSSeVGQN8A8uM1SjdT5UUlVV2mRFLXRi4-o5p6aCgYKAZwSARMSFQHGX2Mie7TySXWGzWLSpEnAIiyDGA0171';
+const fullUrl = ('https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq?sheet=' + sheetTitle + '&range=' + sheetRange)
 
 const levels = {
     'Shaurya': 3,
@@ -80,7 +83,7 @@ function logPoints() {
 
 function appendPointsToSheet(person, pointsEarned) {
     // Construct the URL to append data to Google Sheets
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:D1:append?valueInputOption=USER_ENTERED&key=${apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:B1:append?valueInputOption=USER_ENTERED&key=${apiKey}`;
 
     // Data to append
     const values = [
@@ -224,7 +227,7 @@ function updateTasks() {
         const values = data.values || [];
         const loggedInUser = localStorage.getItem('loggedInUser');
 
-        const userTasks = values.filter(row => row[0] === loggedInUser || row[1] === loggedInUser);
+        const userTasks = values.filter(row => row[1] === loggedInUser || row[2] === loggedInUser);
 
         const tasksDiv = document.getElementById('tasks');
         tasksDiv.innerHTML = '';
@@ -234,14 +237,11 @@ function updateTasks() {
         } else {
             userTasks.forEach(task => {
                 const taskDiv = document.createElement('div');
-                taskDiv.className = 'task';
-                taskDiv.innerHTML = `
-                    <strong>Task:</strong> ${task[2]}<br>
-                    <strong>Points:</strong> ${task[3]}<br>
-                    <strong>Assigned By:</strong> ${task[0]}<br>
-                    <strong>Assigned To:</strong> ${task[1]}<br>
-                    <button onclick="completeTask('${task[0]}', '${task[1]}', '${task[2]}', '${task[3]}')">Complete Task</button>
-                `;
+                taskDiv.className = 'task-entry';
+                taskDiv.innerHTML = `<p>Assigned By: ${task[1]}</p>
+                                     <p>Assigned To: ${task[2]}</p>
+                                     <p>Task: ${task[3]}</p>
+                                     <p>Points: ${task[4]}</p>`;
                 tasksDiv.appendChild(taskDiv);
             });
         }
@@ -251,68 +251,23 @@ function updateTasks() {
     });
 }
 
-function completeTask(assignedBy, assignTo, assignTask, assignPoints) {
-    // Fetch data from Google Sheets
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?key=${apiKey}`;
+function updateAssignToOptions(userLevel) {
+    const assignTo = document.getElementById('assignTo');
+    assignTo.innerHTML = '';
 
-    fetch(url)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+    for (let user in levels) {
+        if (levels[user] === 1 && userLevel >= 2) {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            assignTo.appendChild(option);
+        } else if (userLevel === 3) {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            assignTo.appendChild(option);
         }
-        return response.json();
-    })
-    .then(data => {
-        const values = data.values || [];
-        const loggedInUser = localStorage.getItem('loggedInUser');
-        
-        const actualIndex = values.findIndex(row => {
-            return (row[0] === assignedBy || row[1] === assignTo) && row[2] === assignTask && row[3] === assignPoints;
-        });
-
-        if (actualIndex === -1) {
-            alert('Task not found or you do not have permission to complete this task.');
-            return;
-        }
-
-        // Update points for the user completing the task
-        points[loggedInUser] = (points[loggedInUser] || 0) + parseFloat(assignPoints);
-
-        // Remove the task from Google Sheets
-        values.splice(actualIndex, 1);
-
-        // Construct the URL to update data in Google Sheets
-        const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:D1:clear?key=${apiKey}`;
-
-        fetch(updateUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKeyy}` // Include if using OAuth token
-            },
-            body: JSON.stringify({
-                range: 'Sheet1!A1:D1',
-                values: values
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Task completed successfully', data);
-            updateTasks(); // Update the tasks list after completing task
-            updateLeaderboard(); // Update the leaderboard after completing task
-        })
-        .catch(error => {
-            console.error('Error completing task:', error);
-        });
-    })
-    .catch(error => {
-        console.error('Error fetching data from Google Sheets:', error);
-    });
+    }
 }
 
 window.onload = function() {
